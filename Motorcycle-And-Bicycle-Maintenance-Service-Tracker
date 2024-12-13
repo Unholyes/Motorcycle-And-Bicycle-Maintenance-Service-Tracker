@@ -1,0 +1,1115 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+namespace MotorcyclandBicycleeMaintenanceTracker
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            MenuManager menuManager = new MenuManager();
+            menuManager.DisplayMenu();
+        }
+        
+    }
+    class MenuManager
+    {
+        public void DisplayMenu()
+        {
+            MaintenanceTracker tracker = null;
+            bool mainLoop = true;
+
+            while (mainLoop)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Welcome to the Maintenance Service Center! ===\n");
+                Console.WriteLine("Select Vehicle Type of the Costumer:");
+                Console.WriteLine("[1] Motorcycle Maintenance Tracker");
+                Console.WriteLine("[2] Bicycle Maintenance Tracker");
+                Console.WriteLine("[3] Admin Mode (Staff Only)");
+                Console.WriteLine("[4] Exit Application");
+                Console.WriteLine("-------------------------------------------");
+                Console.Write("Choose an option: ");
+                string trackerChoice = Console.ReadLine();
+
+                switch (trackerChoice)
+                {
+                    case "1":
+                        tracker = new MotorcycleMaintenanceTracker();
+                        RunCustomerMenu(tracker);
+                        break;
+                    case "2":
+                        tracker = new BicycleMaintenanceTracker();
+                        RunCustomerMenu(tracker);
+                        break;
+                    case "3":
+                        RunAdminMode();
+                        break;
+                    case "4":
+                        Console.WriteLine("Exiting the application. Thank you for using the Maintenance Tracker!");
+                        mainLoop = false;
+                        break;
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        Console.WriteLine("Press any key to try again...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+        public static string ReadPassword()
+        {
+            string password = string.Empty;
+            ConsoleKey key;
+
+            do
+            {
+                var keyInfo = Console.ReadKey(intercept: true); 
+                key = keyInfo.Key;
+
+                if (key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password = password.Substring(0, password.Length - 1);
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    password += keyInfo.KeyChar;
+                    Console.Write("*");
+                }
+            } while (key != ConsoleKey.Enter);
+
+            Console.WriteLine();
+            return password;
+        }
+        public void RunAdminMode()
+        {
+            Console.Clear();
+            Console.Write("Enter Admin Password: ");
+            string password = ReadPassword();
+
+            if (password == "admin123")
+            {
+                Console.WriteLine("Admin access granted. Press any key to continue...");
+                Console.ReadKey();
+
+                MaintenanceTracker tracker = null;
+                bool adminLoop = true;
+
+                while (adminLoop)
+                {
+                    Console.Clear();
+                    Console.WriteLine("=== Admin Mode ===\n");
+                    Console.WriteLine("Select Vehicle Type to Manage:");
+                    Console.WriteLine("[1] Motorcycle Maintenance Tracker");
+                    Console.WriteLine("[2] Bicycle Maintenance Tracker");
+                    Console.WriteLine("[3] Return to Costumer Menu");
+                    Console.WriteLine("-------------------------------------------");
+                    Console.Write("Choose an option: ");
+                    string adminChoice = Console.ReadLine();
+
+                    switch (adminChoice)
+                    {
+                        case "1":
+                            tracker = new MotorcycleMaintenanceTracker();
+                            RunAdminMenu(tracker);
+                            break;
+                        case "2":
+                            tracker = new BicycleMaintenanceTracker();
+                            RunAdminMenu(tracker);
+                            break;
+                        case "3":
+                            adminLoop = false;
+                            break;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            Console.WriteLine("Press any key to try again...");
+                            Console.ReadKey();
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Incorrect password. Returning to main menu...");
+                Console.ReadKey();
+            }
+        }
+        public void RunCustomerMenu(MaintenanceTracker tracker)
+        {
+            bool trackerLoop = true;
+
+            while (trackerLoop)
+            {
+                Console.Clear();
+                bool continueTrackerMenu = tracker.DisplayTrackerInfo();
+
+                if (!continueTrackerMenu)
+                {
+                    return;
+                }
+
+                while (true)
+                {
+                    Console.Clear();
+                    tracker.ViewTasks();
+                    Console.WriteLine("\n=== Select Costumer Options ===\n");
+                    Console.WriteLine("1. Generate Receipt");
+                    Console.WriteLine("2. Return to Main Menu");
+                    Console.Write("Choose an option: ");
+                    string choice = Console.ReadLine();
+
+                    switch (choice)
+                    {
+                        case "1":
+                            tracker.GenerateReceipt();
+                            Console.WriteLine("\nPress any key to continue...");
+                            Console.ReadKey();
+                            break;
+                        case "2":
+                            trackerLoop = false;
+                            return;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            Console.WriteLine("\nPress any key to continue...");
+                            Console.ReadKey();
+                            break;
+                    }
+                }
+            }
+        }
+
+        public void RunAdminMenu(MaintenanceTracker tracker)
+        {
+            bool trackerLoop = true;
+            while (trackerLoop)
+            {
+                Console.Clear();
+                bool continueTrackerMenu = tracker.DisplayTrackerInfo();
+
+                if (!continueTrackerMenu)
+                {
+                    return;
+                }
+                while (true)
+                {
+                    Console.Clear();
+                    tracker.ViewTasks();
+                    Console.WriteLine("\n=== Select Admin Options ===\n");
+                    Console.WriteLine("1. Manage Tasks");
+                    Console.WriteLine("2. Generate Receipt");
+                    Console.WriteLine("3. Generate Sales Report");
+                    Console.WriteLine("4. Return to Main Menu");
+                    Console.Write("Choose an option: ");
+                    string choice = Console.ReadLine();
+
+                    switch (choice)
+                    {
+                        case "1":
+                            RunTaskManager(tracker);
+                            break;
+                        case "2":
+                            tracker.GenerateReceipt();
+                            Console.WriteLine("\nPress any key to continue...");
+                            Console.ReadKey();
+                            break;
+                        case "3":
+                            Console.Clear();
+                            tracker.GenerateSalesReport();
+                            Console.WriteLine("\nPress any key to continue...");
+                            Console.ReadKey();
+                            break;
+                        case "4":
+                            trackerLoop = false;
+                            Console.WriteLine("\nPress any key to return...");
+                            Console.ReadKey();
+                            return;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            Console.WriteLine("\nPress any key to continue...");
+                            Console.ReadKey();
+                            break;
+                    }
+                }
+            }
+        }
+        public void RunTaskManager(MaintenanceTracker tracker)
+        {
+            bool run = true;
+            while (run)
+            {
+                Console.Clear();
+                tracker.ViewTasks();
+                Console.WriteLine("\n=== Select Task Management ===\n");
+                Console.WriteLine("1. Add Maintenance Task");
+                Console.WriteLine("2. Delete Maintenance Tasks");
+                Console.WriteLine("3. Save Tasks");
+                Console.WriteLine("4. Load Tasks");
+                Console.WriteLine("5. Return ");
+                Console.Write("Choose an option: ");
+                string choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        tracker.AddTask();
+                        Console.WriteLine("\nPress any key to continue...");
+                        Console.ReadKey();
+                        break;
+                    case "2":
+                        tracker.DeleteTask();
+                        Console.WriteLine("\nPress any key to continue...");
+                        Console.ReadKey();
+                        break;
+                    case "3":
+                        tracker.SaveTasks();
+                        Console.WriteLine("\nPress any key to continue...");
+                        Console.ReadKey();
+                        break;
+                    case "4":
+                        tracker.LoadTasks();
+                        Console.WriteLine("\nPress any key to continue...");
+                        Console.ReadKey();
+                        break;
+                    case "5":
+                        run = false;
+                        Console.WriteLine("\nPress any key to return...");
+                        Console.ReadKey();
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        Console.WriteLine("\nPress any key to continue...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+    }
+    class MaintenanceTask
+    {
+        public string TaskName { get; set; }
+        public int FrequencyKilometers { get; set; }
+        public int Price { get; set; }
+        public int EstimatedTime { get; set; }
+
+        public MaintenanceTask(string taskName, int frequencyKilometers, int price, int estimatedTime)
+        {
+            TaskName = taskName;
+            FrequencyKilometers = frequencyKilometers;
+            Price = price;
+            EstimatedTime = estimatedTime;
+        }
+    }
+
+    abstract class MaintenanceTracker
+    {
+        protected List<MaintenanceTask> tasks = new List<MaintenanceTask>();
+        protected string currentBrand = "";
+        protected string vehicleType = "";
+
+        public abstract bool DisplayTrackerInfo();
+
+        public void AddTask()
+        {
+            try
+            {
+                Console.Clear();
+                Console.Write("Enter Task Name: ");
+                string taskName = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(taskName))
+                {
+                    throw new ArgumentException("Task Name cannot be empty.");
+                }
+
+                Console.Write("Enter Frequency (in kilometers): ");
+                if (!int.TryParse(Console.ReadLine(), out int frequencyKilometers) || frequencyKilometers <= 0)
+                {
+                    throw new ArgumentException("Frequency must be a positive integer.");
+                }
+
+                Console.Write("Enter Price: ");
+                if (!int.TryParse(Console.ReadLine(), out int price) || price < 0)
+                {
+                    throw new ArgumentException("Price must be a non-negative integer.");
+                }
+
+                Console.Write("Enter Estimated Time (in minutes): ");
+                if (!int.TryParse(Console.ReadLine(), out int estimatedTime) || estimatedTime <= 0)
+                {
+                    throw new ArgumentException("Estimated time must be a positive integer.");
+                }
+
+                MaintenanceTask newTask = new MaintenanceTask(taskName, frequencyKilometers, price, estimatedTime);
+                tasks.Add(newTask);
+
+                Console.WriteLine("\nTask added successfully.");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"\nInput Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+        }
+
+        public void ViewTasks()
+        {
+            Console.Clear();
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks available.");
+                return;
+            }
+
+            Console.WriteLine($"\nAvailable {currentBrand} {vehicleType} Maintenance Services:");
+            Console.WriteLine("------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"{"Task Name",-40} {"Frequency (km)",-20} {"Price (₱)",-10} {"Time (min)",-10}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------");
+
+            foreach (var task in tasks)
+            {
+                string truncatedName = task.TaskName.Length > 37 ? task.TaskName.Substring(0, 34) + "..." : task.TaskName;
+                Console.WriteLine($"{truncatedName,-40} {task.FrequencyKilometers,-20:N0} {task.Price,-10:N0} {task.EstimatedTime,-10:N0}");
+            }
+
+            Console.WriteLine("------------------------------------------------------------------------------------------------\n");
+        }
+        protected string GetSaveFileName()
+        {
+            if (string.IsNullOrEmpty(currentBrand) || string.IsNullOrEmpty(vehicleType))
+            {
+                throw new InvalidOperationException("Vehicle type and brand must be set before saving/loading tasks.");
+            }
+
+            string sanitizedBrand = currentBrand.Replace(" ", "_");
+            string sanitizedType = vehicleType.Replace(" ", "_");
+            return $"tasks_{sanitizedType}_{sanitizedBrand}.txt";
+        }
+
+        public void SaveTasks()
+        {
+            try
+            {
+                string fileName = GetSaveFileName();
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    foreach (var task in tasks)
+                    {
+                        writer.WriteLine($"{task.TaskName},{task.FrequencyKilometers},{task.Price},{task.EstimatedTime}");
+                    }
+                }
+                Console.WriteLine($"Tasks saved to file for {currentBrand} {vehicleType}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error saving tasks: " + ex.Message);
+            }
+        }
+        public void LoadTasks()
+        {
+            try
+            {
+                string fileName = GetSaveFileName();
+                if (File.Exists(fileName))
+                {
+                    tasks.Clear();
+                    using (StreamReader reader = new StreamReader(fileName))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string[] sections = line.Split(',');
+                            if (sections.Length == 4)
+                            {
+                                MaintenanceTask task = new MaintenanceTask(
+                                    sections[0],
+                                    int.Parse(sections[1]),
+                                    int.Parse(sections[2]),
+                                    int.Parse(sections[3])
+                                );
+                                tasks.Add(task);
+                            }
+                        }
+                    }
+                    Console.WriteLine($"Tasks loaded for {currentBrand} {vehicleType}.");
+                }
+                else
+                {
+                    Console.WriteLine($"No saved tasks found for {currentBrand} {vehicleType}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading tasks: " + ex.Message);
+            }
+        }
+        public void DeleteTask()
+        {
+            Console.Clear();
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks available to delete.");
+                return;
+            }
+
+            while (true)
+            {
+                Console.WriteLine("\nCurrent Maintenance Service:");
+                Console.WriteLine("--------------------------------------------------------------------------------");
+                Console.WriteLine($"{"No.",-5} {"Task Name",-40} {"Frequency (km)",-20} {"Price (₱)",-10}");
+                Console.WriteLine("--------------------------------------------------------------------------------");
+
+                for (int i = 0; i < tasks.Count; i++)
+                {
+                    string truncatedName = tasks[i].TaskName.Length > 37 ? tasks[i].TaskName.Substring(0, 34) + "..." : tasks[i].TaskName;
+                    Console.WriteLine($"[{i + 1,2}] {truncatedName,-40} {tasks[i].FrequencyKilometers,-20:N0} {tasks[i].Price,-10:N0}");
+                }
+                Console.WriteLine("--------------------------------------------------------------------------------");
+                Console.Write("\nEnter the number of the task to delete (or 0 to cancel): ");
+
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice == 0)
+                    {
+                        Console.WriteLine("Delete operation cancelled.");
+                        return;
+                    }
+
+                    if (choice > 0 && choice <= tasks.Count)
+                    {
+                        var taskToDelete = tasks[choice - 1];
+                        Console.Write($"\nAre you sure you want to delete '{taskToDelete.TaskName}'? (Y/N): ");
+                        if (Console.ReadLine().Trim().ToUpper() == "Y")
+                        {
+                            tasks.RemoveAt(choice - 1);
+                            Console.WriteLine("Task deleted successfully.");
+                            return;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Delete operation cancelled.");
+                            return;
+                        }
+                    }
+                }
+
+                Console.WriteLine("Invalid selection. Please try again.");
+                Console.Write("Would you like to try again? (Y/N): ");
+                if (Console.ReadLine().Trim().ToUpper() != "Y")
+                {
+                    return;
+                }
+                Console.Clear();
+            }
+        }
+
+        public void GenerateReceipt()
+        {
+            Console.Clear();
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks available to generate a receipt.");
+                return;
+            }
+
+            Console.WriteLine("\nAvailable Maintenance Tasks:");
+            Console.WriteLine("--------------------------------------------------------------------");
+            Console.WriteLine($"{"No.",3}  {"Task Name",-40} {"Price (₱)",8}{"Time (min)",12}");
+            Console.WriteLine("--------------------------------------------------------------------");
+
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                string truncatedName = tasks[i].TaskName.Length > 37 ? tasks[i].TaskName.Substring(0, 34) + "..." : tasks[i].TaskName;
+                Console.WriteLine($"[{i + 1,2}] {truncatedName,-40} ₱{tasks[i].Price,-10:N0} {tasks[i].EstimatedTime,3:N0}");
+            }
+
+            Console.WriteLine("--------------------------------------------------------------------");
+            Console.WriteLine("\nEnter task numbers to include (comma-separated, e.g., 1,3,4): ");
+
+            try
+            {
+                string input = Console.ReadLine();
+                string[] selectedIndexes = input.Split(',');
+                List<MaintenanceTask> selectedTasks = new List<MaintenanceTask>();
+
+                // Validate and collect selected tasks
+                foreach (var index in selectedIndexes)
+                {
+                    if (int.TryParse(index.Trim(), out int taskIndex) && taskIndex > 0 && taskIndex <= tasks.Count)
+                    {
+                        selectedTasks.Add(tasks[taskIndex - 1]);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Warning: Invalid selection '{index.Trim()}' ignored.");
+                    }
+                }
+
+                if (selectedTasks.Count == 0)
+                {
+                    Console.WriteLine("No valid tasks selected. Cannot generate receipt.");
+                    return;
+                }
+
+                Console.Clear();
+                int totalTime = selectedTasks.Sum(task => task.EstimatedTime);
+                string dateTime = DateTime.Now.ToString("yyyy-MM-dd @ HH:mm:ss");
+                string receiptNumber = DateTime.Now.ToString("yyyyMMddHHmmss");
+
+                Console.WriteLine("\n=======================================================");
+                Console.WriteLine("                    MAINTENANCE RECEIPT               ");
+                Console.WriteLine("=======================================================");
+                Console.WriteLine($"{"Receipt #:",-20} {receiptNumber}");
+                Console.WriteLine($"{"Date:",-20} {dateTime}");
+                Console.WriteLine("-------------------------------------------------------");
+
+                Console.WriteLine("\nSelected Services:");
+                Console.WriteLine("-------------------------------------------------------");
+                Console.WriteLine($"{"Service",-40} {"Price (₱)",10}");
+                Console.WriteLine("-------------------------------------------------------");
+
+                decimal subtotal = 0;
+                foreach (var task in selectedTasks)
+                {
+                    Console.WriteLine($"{task.TaskName,-40}   ₱{task.Price,-10:N0}");
+                    subtotal += task.Price;
+                }
+
+                decimal vat = subtotal * 0.12m; // 12% VAT
+                decimal total = subtotal + vat;
+
+                Console.WriteLine("-------------------------------------------------------");
+                Console.WriteLine($"{"Subtotal",-40}   ₱{subtotal,-10:N0}");
+                Console.WriteLine($"{"VAT (12%)",-40}   ₱{vat,-10:N0}");
+                Console.WriteLine("-------------------------------------------------------");
+                Console.WriteLine($"{"TOTAL",-40}   ₱{total,-10:N0}");
+                Console.WriteLine("=======================================================");
+                Console.WriteLine($"{"Total Estimated Time",-40}   {totalTime} mins");
+                Console.WriteLine("\nThank you for your business!");
+                Console.WriteLine("=======================================================\n");
+
+                Console.Write("Would you like to save this receipt? (Y/N): ");
+                if (Console.ReadLine().Trim().ToUpper() == "Y")
+                {
+                    SaveReceiptToFile(receiptNumber, dateTime, selectedTasks, subtotal, vat, total,totalTime);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating receipt: {ex.Message}");
+            }
+        }
+        private void SaveReceiptToFile(string receiptNumber, string dateTime, List<MaintenanceTask> selectedTasks,
+            decimal subtotal, decimal vat, decimal total, int totalTime)
+        {
+            try
+            {
+                string fileName = $"Receipt_{receiptNumber}.txt";
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    writer.WriteLine("\n=======================================================");
+                    writer.WriteLine("                    MAINTENANCE RECEIPT               ");
+                    writer.WriteLine("=======================================================");
+                    writer.WriteLine($"{"Receipt #:",-20} {receiptNumber}");
+                    writer.WriteLine($"{"Date:",-20} {dateTime}");
+                    writer.WriteLine("-------------------------------------------------------");
+
+                    writer.WriteLine("\nSelected Services:");
+                    writer.WriteLine("-------------------------------------------------------");
+                    writer.WriteLine($"{"Service",-40} {"Price (₱)",10}");
+                    writer.WriteLine("-------------------------------------------------------");
+
+
+                    foreach (var task in selectedTasks)
+                    {
+                        writer.WriteLine($"{task.TaskName,-40}   ₱{task.Price,-10:N0}");
+                        subtotal += task.Price;
+                    }
+
+                    writer.WriteLine("-------------------------------------------------------");
+                    writer.WriteLine($"{"Subtotal",-40}   ₱{subtotal,-10:N0}");
+                    writer.WriteLine($"{"VAT (12%)",-40}   ₱{vat,-10:N0}");
+                    writer.WriteLine("-------------------------------------------------------");
+                    writer.WriteLine($"{"TOTAL",-40}   ₱{total,-10:N0}");
+                    writer.WriteLine("=======================================================");
+                    writer.WriteLine($"{"Total Estimated Time",-40}   {totalTime} mins");
+                    writer.WriteLine("\nThank you for your business!");
+                    writer.WriteLine("=======================================================\n");
+                }
+                Console.WriteLine($"\nReceipt saved as {fileName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving receipt: {ex.Message}");
+            }
+        }
+        public void GenerateSalesReport()
+        {
+            Console.Clear();
+            try
+            {
+                var receiptFiles = Directory.GetFiles(".", "Receipt_*.txt");
+                if (receiptFiles.Length == 0)
+                {
+                    Console.WriteLine("No receipt files found to generate report.");
+                    return;
+                }
+
+                var salesData = new List<(DateTime date, string service, decimal price)>();
+
+                // Parse each receipt file
+                foreach (var file in receiptFiles)
+                {
+                    ParseReceiptFile(file, salesData);
+                }
+
+                // Consolidate sales data
+                var consolidatedSales = ConsolidateSalesData(salesData);
+
+                Console.WriteLine("\nSales Report");
+                Console.WriteLine("-------------------------------------------------------------------------------");
+                Console.WriteLine($"{"Date",-12} {"Service",-30} {"Qty",-5}  {"Unit Price (₱)",-15} {"Total (₱)",12}");
+                Console.WriteLine("------------------------------------------------------------------------------");
+
+                decimal totalSales = 0;
+
+                // Print each consolidated sale
+                foreach (var sale in consolidatedSales)
+                {
+                    decimal serviceTotal = sale.price * sale.quantity;
+
+                    string truncatedName = sale.service.Length > 28 ? sale.service.Substring(0, 24) + "..." : sale.service;
+
+                    Console.WriteLine($"{sale.date.ToString("MM/dd/yyyy"),-12} {truncatedName,-30} {sale.quantity,-5}  ₱{sale.price,-14:N0}    ₱{serviceTotal,-12:N0}");
+
+                    totalSales += serviceTotal;
+                }
+
+                Console.WriteLine("-------------------------------------------------------------------------------");
+                Console.WriteLine($"{"Total Sales",-45} ₱{totalSales,-12:N0}");
+
+                // Offer to save report
+                Console.Write("\nWould you like to save this report? (Y/N): ");
+                if (Console.ReadLine().Trim().ToUpper() == "Y")
+                {
+                    SaveSalesReport(consolidatedSales, totalSales);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating sales report: {ex.Message}");
+            }
+        }
+
+        private List<(DateTime date, string service, decimal price, int quantity)> ConsolidateSalesData(List<(DateTime date, string service, decimal price)> salesData)
+        {
+            salesData.Sort((a, b) => a.date.CompareTo(b.date));
+
+            var consolidatedSales = salesData
+                .GroupBy(s => new { s.service, s.price })
+                .Select(g => (
+                    date: g.First().date,
+                    service: g.Key.service,
+                    price: g.Key.price,
+                    quantity: g.Count()
+                ))
+                .ToList();
+
+            return consolidatedSales;
+        }
+
+        private void ParseReceiptFile(string filePath, List<(DateTime date, string service, decimal price)> salesData)
+        {
+            try
+            {
+                string[] lines = File.ReadAllLines(filePath);
+                DateTime receiptDate = DateTime.MinValue; // Start with an invalid date
+
+                bool readingServices = false;
+
+                foreach (var line in lines)
+                {
+                    // Try to parse date from receipt if it exists in a specific format
+                    if (line.Contains("Date:"))
+                    {
+                        string dateTimeStr = line.Split(':')[1].Trim(); 
+                        if (dateTimeStr.Contains("@"))
+                        {
+                            dateTimeStr = dateTimeStr.Split('@')[0].Trim(); 
+                        }
+                        if (DateTime.TryParseExact(dateTimeStr, "yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None,out DateTime parsedDateTime))
+                        {
+                            receiptDate = parsedDateTime; 
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: Could not parse date in receipt '{filePath}'");
+                        }
+                    }
+
+                    // Start reading services
+                    if (line.Contains("Selected Services:"))
+                    {
+                        readingServices = true;
+                        continue;
+                    }
+
+                    // Stop reading services
+                    if (readingServices && line.Contains("Subtotal"))
+                    {
+                        readingServices = false;
+                        continue;
+                    }
+
+                    // Parse service details
+                    if (readingServices && line.Contains("₱"))
+                    {
+                        string[] parts = line.Split(new[] { "₱" }, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (parts.Length >= 2)
+                        {
+                            string serviceName = parts[0].Trim();
+                            if (decimal.TryParse(parts[1].Trim().Replace(",", ""), out decimal servicePrice))
+                            {
+                                if (receiptDate == DateTime.MinValue) 
+                                {
+                                    receiptDate = DateTime.Now; 
+                                }
+                                salesData.Add((receiptDate, serviceName, servicePrice));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing receipt file {Path.GetFileName(filePath)}: {ex.Message}");
+            }
+        }
+
+
+        private void SaveSalesReport(List<(DateTime date, string service, decimal price, int quantity)> consolidatedSales, decimal totalSales)
+        {
+            string fileName = $"SalesReport_{DateTime.Now:yyyyMMdd}.txt";
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    writer.WriteLine("Sales Report");
+                    writer.WriteLine("-------------------------------------------------------------------------------");
+                    writer.WriteLine($"{"Date",-12} {"Service",-30} {"Qty",-5}  {"Unit Price (₱)",-15} {"Total (₱)",12}");
+                    writer.WriteLine("-------------------------------------------------------------------------------");
+
+                    foreach (var sale in consolidatedSales)
+                    {
+                        decimal serviceTotal = sale.price * sale.quantity;
+
+                        writer.WriteLine($"{sale.date.ToString("MM/dd/yyyy"),-12} {sale.service,-30} {sale.quantity,-5}  ₱{sale.price,-14:N0}    ₱{serviceTotal,-12:N0}");
+                    }
+
+                    writer.WriteLine("-------------------------------------------------------------------------------");
+                    writer.WriteLine($"{"Total Sales",-45} ₱{totalSales:N0}");
+                }
+                Console.WriteLine($"\nSales report saved as {fileName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving sales report: {ex.Message}");
+            }
+        }
+    }
+
+    class MotorcycleMaintenanceTracker : MaintenanceTracker
+    {
+        public MotorcycleMaintenanceTracker()
+        {
+            vehicleType = "Motorcycle";
+        }
+
+        public override bool DisplayTrackerInfo()
+        {
+            Console.WriteLine("\n=== Motorcycle Maintenance Tracker ===\n");
+            Console.WriteLine("Available Motorcycle Brands:");
+            Console.WriteLine("[1] Honda");
+            Console.WriteLine("[2] Yamaha");
+            Console.WriteLine("[3] Kawasaki");
+            Console.WriteLine("[4] Suzuki");
+            Console.WriteLine("[5] Royal Enfield");
+            Console.WriteLine("[6] Return to Main Menu");
+            Console.WriteLine("-------------------------------------------");
+            Console.Write("Select a brand: ");
+
+            string brandChoice = Console.ReadLine();
+            switch (brandChoice)
+            {
+                case "1":
+                    currentBrand = "Honda";
+                    DisplayHondaTasks();
+                    return true;
+                case "2":
+                    currentBrand = "Yamaha";
+                    DisplayYamahaTasks();
+                    return true;
+                case "3":
+                    currentBrand = "Suzuki";
+                    DisplaySuzukiTasks();
+                    return true;
+                case "4":
+                    currentBrand = "Kawasaki";
+                    DisplayKawasakiTasks();
+                    return true;
+                case "5":
+                    currentBrand = "Royal-Enfield";
+                    DisplayRoyalTasks();
+                    return true;
+                case "6":
+                    Console.WriteLine("Returning to Main Menu...");
+                    Console.ReadKey();
+                    return false;
+                default:
+                    Console.WriteLine("Invalid brand choice. Returning to Main Menu...");
+                    return false;
+            }
+        }
+        private void DisplayHondaTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Oil Change", 1000, 700, 30));
+            tasks.Add(new MaintenanceTask("Replace Oil Filter", 5000, 400, 20));
+            tasks.Add(new MaintenanceTask("Replace Air Cleaner", 18000, 800, 40));
+            tasks.Add(new MaintenanceTask("Replace Spark Plug", 12000, 500, 25));
+            tasks.Add(new MaintenanceTask("Replace Drive Belt", 24000, 400, 50));
+            tasks.Add(new MaintenanceTask("Inspect Headlight Aim", 6000, 100, 10));
+            tasks.Add(new MaintenanceTask("Inspect Brake Fluid", 6000, 150, 15));
+            tasks.Add(new MaintenanceTask("Inspect Suspension", 6000, 300, 30));
+            tasks.Add(new MaintenanceTask("Inspect Cooling System", 12000, 600, 40));
+            tasks.Add(new MaintenanceTask("Chain Lubing", 3000, 250, 15));
+            Console.WriteLine("\nHonda Maintenance Tasks Loaded.");
+        }
+        private void DisplayYamahaTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Oil Change", 1000, 700, 30));
+            tasks.Add(new MaintenanceTask("Replace Brake Pads", 16000, 500, 45));
+            tasks.Add(new MaintenanceTask("Replace Brake Shoe", 16000, 970, 50));
+            tasks.Add(new MaintenanceTask("Replace Spark Plug", 12000, 500, 25));
+            tasks.Add(new MaintenanceTask("Replace Air Filter", 18000, 300, 20));
+            tasks.Add(new MaintenanceTask("Replace Drive Chain Sprocket", 20000, 2000, 60));
+            tasks.Add(new MaintenanceTask("Replace V-Belt", 8000, 900, 50));
+            tasks.Add(new MaintenanceTask("Replace Front Fork Oil", 16000, 800, 90));
+            tasks.Add(new MaintenanceTask("Inspect Battery", 6000, 100, 10));
+            tasks.Add(new MaintenanceTask("Inspect Wheel Bearings", 6000, 600, 25));
+            tasks.Add(new MaintenanceTask("Inspect Lights", 6000, 100, 10));
+            tasks.Add(new MaintenanceTask("Injector Cleaning", 6000, 700, 60));
+            Console.WriteLine("\nYamaha Maintenance Tasks Loaded.");
+        }
+        private void DisplaySuzukiTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Oil Change", 1000, 700, 30));
+            tasks.Add(new MaintenanceTask("Replace Oil Filter", 4000, 400, 20));
+            tasks.Add(new MaintenanceTask("Inspect Cable Play", 4000, 100, 15));
+            tasks.Add(new MaintenanceTask("Inspect Drive Chain", 4000, 100, 15));
+            tasks.Add(new MaintenanceTask("Inspect Fuel Hose", 4000, 100, 15));
+            tasks.Add(new MaintenanceTask("Inspect Steering", 8000, 500, 30));
+            tasks.Add(new MaintenanceTask("Inspect Brakes", 4000, 500, 20));
+            tasks.Add(new MaintenanceTask("Lubrication", 1000, 200, 15));
+            tasks.Add(new MaintenanceTask("Replace Air Filter", 12000, 500, 20));
+            tasks.Add(new MaintenanceTask("Replace Spark Plug", 10000, 500, 25));
+            Console.WriteLine("\nSuzuki Maintenance Tasks Loaded.");
+        }
+        private void DisplayKawasakiTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Oil Change", 5000, 700, 30));
+            tasks.Add(new MaintenanceTask("Replace Oil Filter", 10000, 500, 20));
+            tasks.Add(new MaintenanceTask("Replace Air Cleaner", 20000, 500, 40));
+            tasks.Add(new MaintenanceTask("Replace Brake Pads", 15000, 850, 45));
+            tasks.Add(new MaintenanceTask("Replace Spark Plugs", 10000, 700, 25));
+            tasks.Add(new MaintenanceTask("Inspect Steering Play", 5000, 500, 30));
+            tasks.Add(new MaintenanceTask("Inspect Lights", 5000, 100, 10));
+            tasks.Add(new MaintenanceTask("Clean Ball and Playes", 5000, 300, 20));
+            tasks.Add(new MaintenanceTask("Clean Oil Strainer", 10000, 100, 25));
+            tasks.Add(new MaintenanceTask("Clutch Adjustment", 10000, 300, 30));
+            tasks.Add(new MaintenanceTask("Lubrication", 5000, 100, 15));
+            Console.WriteLine("\nKawasaki Maintenance Tasks Loaded.");
+        }
+        private void DisplayRoyalTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Oil Change", 6000, 700, 30));
+            tasks.Add(new MaintenanceTask("Replace Oil Filter", 6000, 500, 20));
+            tasks.Add(new MaintenanceTask("Replace Air Filter", 12000, 500, 20));
+            tasks.Add(new MaintenanceTask("Replace Spark Plug", 15000, 700, 25));
+            tasks.Add(new MaintenanceTask("Replace Fuel Hose", 9000, 500, 30));
+            tasks.Add(new MaintenanceTask("Replace Rubber Hose", 12000, 500, 30));
+            tasks.Add(new MaintenanceTask("Inspect Battery", 3000, 100, 10));
+            tasks.Add(new MaintenanceTask("Inspect Exhaust Valve", 12000, 250, 40));
+            tasks.Add(new MaintenanceTask("Inspect Brake Oil", 12000, 200, 20));
+            tasks.Add(new MaintenanceTask("Fuel Tap Cleaning", 3000, 100, 20));
+            Console.WriteLine("\nRoyal Enfield Maintenance Tasks Loaded.");
+        }
+        public void SaveTasks(string brand)
+        {
+            if (string.IsNullOrEmpty(brand))
+            {
+                Console.WriteLine("Please select a brand first.");
+                return;
+            }
+
+            currentBrand = brand;  // Set the brand before saving
+            base.SaveTasks();
+        }
+
+        public void LoadTasks(string brand)
+        {
+            if (string.IsNullOrEmpty(brand))
+            {
+                Console.WriteLine("Please select a brand first.");
+                return;
+            }
+
+            currentBrand = brand;  // Set the brand before loading
+            base.LoadTasks();
+        }
+    }
+
+    class BicycleMaintenanceTracker : MaintenanceTracker
+    {
+        public BicycleMaintenanceTracker()
+        {
+            vehicleType = "Bicycle";
+        }
+
+        public override bool DisplayTrackerInfo()
+        {
+            Console.WriteLine("\n=== Bicycle Maintenance Tracker ===");
+            Console.WriteLine("Available Bicycle Brands:");
+            Console.WriteLine("[1] Giant");
+            Console.WriteLine("[2] Trek");
+            Console.WriteLine("[3] Cannondale");
+            Console.WriteLine("[4] Specialized");
+            Console.WriteLine("[5] Scott");
+            Console.WriteLine("[6] Return to Main Menu");
+            Console.WriteLine("-------------------------------------------");
+            Console.Write("Select a brand: ");
+
+            string brandChoice = Console.ReadLine();
+            switch (brandChoice)
+            {
+                case "1":
+                    currentBrand = "Giant";
+                    LoadGiantTasks();
+                    return true;
+                case "2":
+                    currentBrand = "Trek";
+                    LoadTrekTasks();
+                    return true;
+                case "3":
+                    currentBrand = "Cannondale";
+                    LoadCannondaleTasks();
+                    return true;
+                case "4":
+                    currentBrand = "Specialized";
+                    LoadSpecializedTasks();
+                    return true;
+                case "5":
+                    currentBrand = "Scott";
+                    LoadScottTasks();
+                    return true;
+                case "6":
+                    Console.WriteLine("Returning to Main Menu...");
+                    return false;
+                default:
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    return false;
+            }
+        }
+        private void LoadGiantTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Tire Pressure Adjustment", 150, 50, 10));
+            tasks.Add(new MaintenanceTask("Chain Cleaning and Lubrication", 200, 150, 20));
+            tasks.Add(new MaintenanceTask("Brake Pad Inspection and Adjustment", 300, 200, 25));
+            tasks.Add(new MaintenanceTask("Drivetrain Deep Clean and Tuning", 500, 450, 60));
+            tasks.Add(new MaintenanceTask("Hydraulic Brake System Service", 1000, 800, 90));
+            tasks.Add(new MaintenanceTask("Bottom Bracket Service", 2000, 600, 75));
+            Console.WriteLine("\nGiant Maintenance Tasks Loaded.");
+        }
+
+        private void LoadTrekTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Multi-Point Safety Inspection", 200, 100, 20));
+            tasks.Add(new MaintenanceTask("Gear Shifting Adjustment", 300, 250, 30));
+            tasks.Add(new MaintenanceTask("Chain Wear Check and Lubrication", 250, 150, 20));
+            tasks.Add(new MaintenanceTask("Wheel Truing and Bearing Service", 1000, 500, 45));
+            tasks.Add(new MaintenanceTask("Suspension Pivot Service", 1500, 800, 90));
+            tasks.Add(new MaintenanceTask("Dropper Post Service", 2000, 600, 60));
+            Console.WriteLine("\nTrek Maintenance Tasks Loaded.");
+        }
+
+        private void LoadCannondaleTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Brake System Inspection", 200, 150, 20));
+            tasks.Add(new MaintenanceTask("Headset Adjustment", 300, 200, 25));
+            tasks.Add(new MaintenanceTask("Tire and Tube Inspection", 250, 100, 15));
+            tasks.Add(new MaintenanceTask("Si Crankset Service", 3000, 1200, 75));
+            tasks.Add(new MaintenanceTask("Lefty Fork Service", 1000, 1200, 90));
+            tasks.Add(new MaintenanceTask("BB30 Bottom Bracket Service", 2000, 700, 70));
+            Console.WriteLine("\nCannondale Maintenance Tasks Loaded.");
+        }
+
+        private void LoadSpecializedTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("Brain Suspension Check", 200, 200, 40));
+            tasks.Add(new MaintenanceTask("SWAT Tool System Check", 300, 100, 15));
+            tasks.Add(new MaintenanceTask("Future Shock Service", 500, 600, 60));
+            tasks.Add(new MaintenanceTask("Power Meter Calibration", 1000, 350, 30));
+            tasks.Add(new MaintenanceTask("Carbon Wheel Inspection", 1500, 800, 45));
+            tasks.Add(new MaintenanceTask("Roval Hub Service", 2000, 900, 75));
+            Console.WriteLine("\nSpecialized Maintenance Tasks Loaded.");
+        }
+
+        private void LoadScottTasks()
+        {
+            tasks.Clear();
+            tasks.Add(new MaintenanceTask("TwinLoc System Check", 200, 150, 30));
+            tasks.Add(new MaintenanceTask("Nude Shock Inspection", 300, 200, 40));
+            tasks.Add(new MaintenanceTask("Chain Guide Service", 250, 150, 20));
+            tasks.Add(new MaintenanceTask("Syncros Component Service", 1000, 500, 50));
+            tasks.Add(new MaintenanceTask("IDS-SL Dropout Service", 1500, 600, 60));
+            tasks.Add(new MaintenanceTask("HMX Carbon Frame Inspection", 2000, 800, 45));
+            Console.WriteLine("\nScott Maintenance Tasks Loaded.");
+        }
+        public void SaveTasks(string brand)
+        {
+            if (string.IsNullOrEmpty(brand))
+            {
+                Console.WriteLine("Please select a brand first.");
+                return;
+            }
+
+            currentBrand = brand;
+            base.SaveTasks();
+        }
+
+        public void LoadTasks(string brand)
+        {
+            if (string.IsNullOrEmpty(brand))
+            {
+                Console.WriteLine("Please select a brand first.");
+                return;
+            }
+
+            currentBrand = brand;
+            base.LoadTasks();
+        }
+    }
+}
